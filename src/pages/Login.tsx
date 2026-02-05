@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +9,10 @@ import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { useEffect } from "react";
 
+// Dummy credentials
+const DUMMY_EMAIL = "dev@dev.dev";
+const DUMMY_PASSWORD = "dev123";
+
 const loginSchema = z.object({
   email: z.string().trim().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
@@ -16,6 +20,7 @@ const loginSchema = z.object({
 
 const Login = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isDark, setIsDark] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -60,13 +65,23 @@ const Login = () => {
       return;
     }
 
-    // Simulate login
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    // Simulate login delay
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    toast({
-      title: "Welcome back!",
-      description: "You have successfully signed in.",
-    });
+    // Check dummy credentials
+    if (formData.email === DUMMY_EMAIL && formData.password === DUMMY_PASSWORD) {
+      toast({
+        title: "Welcome back!",
+        description: "You have successfully signed in.",
+      });
+      navigate("/dashboard");
+    } else {
+      toast({
+        title: "Invalid credentials",
+        description: "Please use dev@dev.dev / dev123",
+        variant: "destructive",
+      });
+    }
 
     setIsLoading(false);
   };

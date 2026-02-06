@@ -25,40 +25,27 @@ const menuItems = [
 interface DashboardSidebarProps {
   isDark: boolean;
   setIsDark: (value: boolean) => void;
-  isCollapsed?: boolean;
-  setIsCollapsed?: (value: boolean) => void;
-  isMobile?: boolean;
-  onNavigate?: () => void;
 }
 
-export const DashboardSidebar = ({ 
-  isDark, 
-  setIsDark, 
-  isCollapsed: externalIsCollapsed, 
-  setIsCollapsed: externalSetIsCollapsed,
-  isMobile = false,
-  onNavigate
-}: DashboardSidebarProps) => {
-  const [internalIsCollapsed, setInternalIsCollapsed] = useState(false);
-  const isCollapsed = externalIsCollapsed ?? internalIsCollapsed;
-  const setIsCollapsed = externalSetIsCollapsed ?? setInternalIsCollapsed;
-  
+export const DashboardSidebar = ({ isDark, setIsDark }: DashboardSidebarProps) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const location = useLocation();
   const { logout, user } = useAuth();
 
-  const handleNavClick = () => {
-    if (onNavigate) onNavigate();
-  };
-
-  const sidebarContent = (
-    <>
+  return (
+    <motion.aside
+      initial={false}
+      animate={{ width: isCollapsed ? 80 : 280 }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
+      className="h-screen sticky top-0 bg-card border-r border-border flex flex-col"
+    >
       {/* Logo */}
       <div className="p-4 border-b border-border">
-        <Link to="/dashboard" className="flex items-center gap-3" onClick={handleNavClick}>
+        <Link to="/dashboard" className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center flex-shrink-0">
             <GraduationCap className="w-6 h-6 text-primary-foreground" />
           </div>
-          {(!isCollapsed || isMobile) && (
+          {!isCollapsed && (
             <motion.span
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -72,7 +59,7 @@ export const DashboardSidebar = ({
       </div>
 
       {/* User Info */}
-      {(!isCollapsed || isMobile) && (
+      {!isCollapsed && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -97,7 +84,7 @@ export const DashboardSidebar = ({
         {menuItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
-            <Link key={item.path} to={item.path} onClick={handleNavClick}>
+            <Link key={item.path} to={item.path}>
               <motion.div
                 whileHover={{ x: 4 }}
                 whileTap={{ scale: 0.98 }}
@@ -109,7 +96,7 @@ export const DashboardSidebar = ({
                 )}
               >
                 <item.icon className="w-5 h-5 flex-shrink-0" />
-                {(!isCollapsed || isMobile) && (
+                {!isCollapsed && (
                   <motion.span
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -126,64 +113,40 @@ export const DashboardSidebar = ({
 
       {/* Bottom Actions */}
       <div className="p-4 border-t border-border space-y-2">
-        {/* Collapse Toggle - Desktop only */}
-        {!isMobile && (
-          <Button
-            variant="ghost"
-            size={isCollapsed ? "icon" : "default"}
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className={cn("w-full", !isCollapsed && "justify-start")}
-          >
-            {isCollapsed ? (
-              <ChevronRight className="w-5 h-5" />
-            ) : (
-              <>
-                <ChevronLeft className="w-5 h-5" />
-                <span className="ml-3">Collapse</span>
-              </>
-            )}
-          </Button>
-        )}
-
         <Button
           variant="ghost"
-          size={isCollapsed && !isMobile ? "icon" : "default"}
+          size={isCollapsed ? "icon" : "default"}
           onClick={() => setIsDark(!isDark)}
-          className={cn("w-full", (!isCollapsed || isMobile) && "justify-start")}
+          className={cn("w-full", !isCollapsed && "justify-start")}
         >
           {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          {(!isCollapsed || isMobile) && <span className="ml-3">{isDark ? "Light" : "Dark"}</span>}
+          {!isCollapsed && <span className="ml-3">Toggle Theme</span>}
         </Button>
 
         <Button
           variant="ghost"
-          size={isCollapsed && !isMobile ? "icon" : "default"}
+          size={isCollapsed ? "icon" : "default"}
           onClick={logout}
-          className={cn("w-full text-destructive hover:text-destructive hover:bg-destructive/10", (!isCollapsed || isMobile) && "justify-start")}
+          className={cn("w-full text-destructive hover:text-destructive hover:bg-destructive/10", !isCollapsed && "justify-start")}
         >
           <LogOut className="w-5 h-5" />
-          {(!isCollapsed || isMobile) && <span className="ml-3">Logout</span>}
+          {!isCollapsed && <span className="ml-3">Logout</span>}
         </Button>
       </div>
-    </>
-  );
 
-  if (isMobile) {
-    return (
-      <div className="h-full flex flex-col bg-card">
-        {sidebarContent}
-      </div>
-    );
-  }
-
-  return (
-    <motion.aside
-      initial={false}
-      animate={{ width: isCollapsed ? 80 : 280 }}
-      transition={{ duration: 0.3, ease: "easeInOut" }}
-      className="h-screen sticky top-0 bg-card border-r border-border flex flex-col"
-    >
-      {sidebarContent}
+      {/* Collapse Toggle */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="absolute -right-3 top-20 w-6 h-6 rounded-full border border-border bg-background shadow-sm"
+      >
+        {isCollapsed ? (
+          <ChevronRight className="w-3 h-3" />
+        ) : (
+          <ChevronLeft className="w-3 h-3" />
+        )}
+      </Button>
     </motion.aside>
   );
 };

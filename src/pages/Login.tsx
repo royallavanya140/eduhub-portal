@@ -1,13 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GraduationCap, Eye, EyeOff, Moon, Sun } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import { z } from "zod";
-import { useEffect } from "react";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Invalid email address"),
@@ -16,11 +16,20 @@ const loginSchema = z.object({
 
 const Login = () => {
   const { toast } = useToast();
+  const { login, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isDark, setIsDark] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/dashboard");
+    }
+  }, [isAuthenticated, navigate]);
 
   useEffect(() => {
     const isDarkMode = document.documentElement.classList.contains("dark");
@@ -60,13 +69,24 @@ const Login = () => {
       return;
     }
 
-    // Simulate login
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    // Simulate login delay
+    await new Promise((resolve) => setTimeout(resolve, 800));
 
-    toast({
-      title: "Welcome back!",
-      description: "You have successfully signed in.",
-    });
+    const success = login(formData.email, formData.password);
+    
+    if (success) {
+      toast({
+        title: "Welcome back!",
+        description: "You have successfully signed in.",
+      });
+      navigate("/dashboard");
+    } else {
+      toast({
+        title: "Login Failed",
+        description: "Invalid email or password. Try dev@dev.dev / dev123",
+        variant: "destructive",
+      });
+    }
 
     setIsLoading(false);
   };
